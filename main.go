@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"testapi/api/oapi"
+	// "testapi/api/oapi"
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/option"
@@ -99,10 +99,10 @@ func main() {
 		option.Summary("Returns a status message"),
 		option.OperationID("health"),
 		option.Tags("health"),
-		oapi.CustomOptionAddResponse(http.StatusOK, "Health check", fuego.Response{
-			ContentTypes: []string{"application/xml", "application/json"},
-			Type:         Health{},
-		}),
+		// oapi.CustomOptionAddResponse(http.StatusOK, "Health check", fuego.Response{
+		// 	ContentTypes: []string{"application/xml", "application/json"},
+		// 	Type:         Health{},
+		// }),
 	)
 
 	// Automatically generates OpenAPI documentation for this route
@@ -114,10 +114,10 @@ func main() {
 		option.Query("name", "Declares a query parameter with default value", param.Default("Carmack")),
 		option.Header("Authorization", "Bearer token", param.Required()),
 		optionPagination,
-		oapi.CustomOptionAddResponse(http.StatusOK, "Health check", fuego.Response{
-			ContentTypes: []string{"application/xml", "application/json"},
-			Type:         Health{},
-		}),
+		// oapi.CustomOptionAddResponse(http.StatusOK, "Health check", fuego.Response{
+		// 	ContentTypes: []string{"application/xml", "application/json"},
+		// 	Type:         Health{},
+		// }),
 	)
 
 	s.Run()

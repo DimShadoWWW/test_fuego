@@ -1,7 +1,6 @@
 package oapi
 
 import (
-	"fmt"
 	"log/slog"
 	"reflect"
 	"slices"
@@ -37,7 +36,6 @@ type customBaseRoute struct {
 
 	OpenAPI *customOpenAPI
 }
-
 
 func CustomOptionAddResponse(code int, description string, response fuego.Response) func(*fuego.BaseRoute) {
 	return func(r *fuego.BaseRoute) {
@@ -186,8 +184,6 @@ func (openapi *customOpenAPI) createSchema(key string, v any) *openapi3.SchemaRe
 //   - max=100 => max=100 (for integers)
 //   - max=100 => maxLength=100 (for strings)
 func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
-	fmt.Println("parseStructTags")
-
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
@@ -222,10 +218,17 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		propertyCopy := *property
 		propertyValue := *propertyCopy.Value
 
+		// If the property is an object, process its own tags
+		if propertyValue.Type != nil {
+			if propertyValue.Type.Is(openapi3.TypeObject) {
+				// Recursively process the struct tags of the inner object
+				parseStructTags(field.Type, schemaRef.Value.Properties[jsonFieldName])
+			}
+		}
+
 		// Xml attributes
 		xmlTag, ok := field.Tag.Lookup("xml")
 		if ok {
-			fmt.Println("xmlTag", xmlTag)
 			xmlTagName := strings.Split(xmlTag, ",")[0] // remove omitempty, etc
 			if xmlTagName == "-" {
 				continue
@@ -233,14 +236,13 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 			if xmlTagName == "" {
 				xmlTagName = field.Name
 			}
-			fmt.Println("xmlTagName", xmlTagName)
 
 			propertyValue.XML = &openapi3.XML{
 				Name: xmlTagName,
 			}
 
 			xmlTags := strings.Split(xmlTag, ",")
-			if ok && slices.Contains(xmlTags, "attr") {
+			if slices.Contains(xmlTags, "attr") {
 				propertyValue.XML.Attribute = true
 			}
 		}
